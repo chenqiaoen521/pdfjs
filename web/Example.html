@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<!--
+Copyright 2012 Mozilla Foundation
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Adobe CMap resources are covered by their own copyright but the same license:
+
+    Copyright 1990-2015 Adobe Systems Incorporated.
+
+See https://github.com/adobe-type-tools/cmap-resources
+-->
+<html dir="ltr" mozdisallowselectionprint moznomarginboxes>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="google" content="notranslate">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>PDF.js viewer</title>
+
+
+  <link rel="stylesheet" href="./viewer.css">
+  <link rel="stylesheet" href="./jstree/themes/default/style.min.css" />
+  <script src="./compatibility.js"></script>
+
+
+
+  <!-- This snippet is used in production (included from viewer.html) -->
+  <link rel="resource" type="application/l10n" href="./locale/locale.properties">
+  <script src="./l10n.js"></script>
+  <script src="../build/pdf.js"></script>
+  <script src="./viewer.js"></script>
+</head>
+
+<body tabindex="1" class="loadingInProgress">
+  <div class="pdf-title">
+    <ul class="pdfTitle" >
+      <li title="缩小"  class="pdfBR">
+        <div id="zoomOut" class="pdfwrapper active"><img src="./images/jian.png"></div>
+      </li>
+      <li title="放大" >
+        <div id="zoomIn" class="pdfwrapper active"><img src="./images/jia.png"></div>
+      </li>
+      <li>
+         <span id="scaleSelectContainer" >
+        <div class="pdfwrapper" style="margin:0 0 0 10px;" title="自动缩放">
+          <select id="scaleSelect"  class="autoZoom" title="自动缩放" >
+            <option id="pageAutoOption" title="" value="auto" selected="selected" >自动缩放</option>
+            <option id="pageActualOption" title="" value="page-actual" >实际大小</option>
+            <option id="pageFitOption" title="" value="page-fit">适合页面</option>
+            <option id="pageWidthOption" title="" value="page-width" >适合页宽</option>
+            <option title="" value="0.5">50%</option>
+            <option title="" value="0.75">75%</option>
+            <option title="" value="1">100%</option>
+            <option title="" value="1.25">125%</option>
+            <option title="" value="1.5">150%</option>
+            <option title="" value="2">200%</option>
+            <option title="" value="3">300%</option>
+            <option title="" value="4">400%</option>
+          </select>
+        </span>
+        </div>
+      </li>
+      <li class="pdfBR" title="顺时针旋转" >
+        <div id="pageRotateCw" class="pdfwrapper active" ><img src="./images/xuanzhuan.png"></div>
+      </li>
+      <li class="pdfBR" title="逆时针旋转" >
+        <div  id="pageRotateCcw" class="pdfwrapper active"><img src="./images/xuanzhuan1.png"></div>
+      </li>
+      <li class="pdfBR" title="移动">
+        <div id="pdfMoving" class="pdfwrapper active"><img src="./images/yidong.png"></div>
+      </li>
+    </ul>
+    <div class="right-title" id="dzjz">
+      <i class="icon1"></i>电子卷宗
+    </div>
+  </div>
+  
+<div id="outerContainer">
+  <div id="pdfsliderout" class="pdf-sliderout">
+    <div class="inputjstree">
+      <input type="text" id="jstreeSearch" placeholder="请输入关键字进行检索" />
+      <i class="search-icon"></i>
+    </div>
+      <div id="jstree"></div>
+    </div>
+  <div id="sidebarContainer">
+    <div id="toolbarSidebar">
+      <div class="splitToolbarButton toggled">
+        <button id="viewThumbnail" class="toolbarButton group toggled" title="Show Thumbnails" tabindex="2" data-l10n-id="thumbs">
+          <span data-l10n-id="thumbs_label">Thumbnails</span>
+        </button>
+        <button id="viewOutline" class="toolbarButton group" title="Show Document Outline (double-click to expand/collapse all items)" tabindex="3" data-l10n-id="document_outline">
+          <span data-l10n-id="document_outline_label">Document Outline</span>
+        </button>
+        <button id="viewAttachments" class="toolbarButton group" title="Show Attachments" tabindex="4" data-l10n-id="attachments">
+          <span data-l10n-id="attachments_label">Attachments</span>
+        </button>
+      </div>
+    </div>
+    <div id="sidebarContent">
+      <div id="thumbnailView">
+      </div>
+      <div id="outlineView" class="hidden">
+      </div>
+      <div id="attachmentsView" class="hidden">
+      </div>
+    </div>
+  </div>  <!-- sidebarContainer -->
+
+  <div id="mainContainer">
+    <div class="findbar hidden doorHanger hiddenSmallView" id="findbar">
+      <label for="findInput" class="toolbarLabel" data-l10n-id="find_label">Find:</label>
+      <input id="findInput" style="width: 94px;" class="toolbarField" tabindex="91">
+      <div class="splitToolbarButton">
+        <button class="toolbarButton findPrevious" title="" id="findPrevious" tabindex="92" data-l10n-id="find_previous">
+          <span data-l10n-id="find_previous_label">Previous</span>
+        </button>
+        <div class="splitToolbarButtonSeparator"></div>
+        <button class="toolbarButton findNext" title="" id="findNext" tabindex="93" data-l10n-id="find_next">
+          <span data-l10n-id="find_next_label">Next</span>
+        </button>
+      </div>
+      <input type="checkbox" id="findHighlightAll" class="toolbarField" tabindex="94">
+      <label for="findHighlightAll" class="toolbarLabel" data-l10n-id="find_highlight">Highlight all</label>
+      <input type="checkbox" id="findMatchCase" class="toolbarField" tabindex="95">
+      <label for="findMatchCase" class="toolbarLabel" data-l10n-id="find_match_case_label">Match case</label>
+      <span id="findResultsCount" class="toolbarLabel hidden"></span>
+      <span id="findMsg" class="toolbarLabel"></span>
+    </div>  <!-- findbar -->
+
+    <div id="secondaryToolbar" class="secondaryToolbar hidden doorHangerRight">
+      <div id="secondaryToolbarButtonContainer">
+        <button id="secondaryPresentationMode" class="secondaryToolbarButton presentationMode visibleLargeView" title="Switch to Presentation Mode" tabindex="51" data-l10n-id="presentation_mode">
+          <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
+        </button>
+
+        <button id="secondaryOpenFile" class="secondaryToolbarButton openFile visibleLargeView" title="Open File" tabindex="52" data-l10n-id="open_file">
+          <span data-l10n-id="open_file_label">Open</span>
+        </button>
+
+        <button id="secondaryPrint" class="secondaryToolbarButton print visibleMediumView" title="Print" tabindex="53" data-l10n-id="print">
+          <span data-l10n-id="print_label">Print</span>
+        </button>
+
+        <button id="secondaryDownload" class="secondaryToolbarButton download visibleMediumView" title="Download" tabindex="54" data-l10n-id="download">
+          <span data-l10n-id="download_label">Download</span>
+        </button>
+
+        <a href="#" id="secondaryViewBookmark" class="secondaryToolbarButton bookmark visibleSmallView" title="Current view (copy or open in new window)" tabindex="55" data-l10n-id="bookmark">
+          <span data-l10n-id="bookmark_label">Current View</span>
+        </a>
+
+        <div class="horizontalToolbarSeparator visibleLargeView"></div>
+
+        <!--<button id="firstPage" class="secondaryToolbarButton firstPage" title="Go to First Page" tabindex="56" data-l10n-id="first_page">-->
+        <!--<span data-l10n-id="first_page_label">Go to First Page</span>-->
+        <!--</button>-->
+        <!--<button id="lastPage" class="secondaryToolbarButton lastPage" title="Go to Last Page" tabindex="57" data-l10n-id="last_page">-->
+        <!--<span data-l10n-id="last_page_label">Go to Last Page</span>-->
+        <!--</button>-->
+
+        <!--<div class="horizontalToolbarSeparator"></div>-->
+
+        <!--<button id="pageRotateCw" class="secondaryToolbarButton rotateCw" title="Rotate Clockwise" tabindex="58" data-l10n-id="page_rotate_cw">-->
+        <!--<span data-l10n-id="page_rotate_cw_label">Rotate Clockwise</span>-->
+        <!--</button>-->
+        <!--<button id="pageRotateCcw" class="secondaryToolbarButton rotateCcw" title="Rotate Counterclockwise" tabindex="59" data-l10n-id="page_rotate_ccw">-->
+        <!--<span data-l10n-id="page_rotate_ccw_label">Rotate Counterclockwise</span>-->
+        <!--</button>-->
+
+        <!--<div class="horizontalToolbarSeparator"></div>-->
+
+        <!--<button id="toggleHandTool" class="secondaryToolbarButton handTool" title="Enable hand tool" tabindex="60" data-l10n-id="hand_tool_enable">-->
+        <!--<span data-l10n-id="hand_tool_enable_label">Enable hand tool</span>-->
+        <!--</button>-->
+
+        <!--<div class="horizontalToolbarSeparator"></div>-->
+
+        <!--<button id="documentProperties" class="secondaryToolbarButton documentProperties" title="Document Properties…" tabindex="61" data-l10n-id="document_properties">-->
+        <!--<span data-l10n-id="document_properties_label">Document Properties…</span>-->
+        <!--</button>-->
+      </div>
+    </div>  <!-- secondaryToolbar -->
+
+    <div class="toolbar">
+      <div id="toolbarContainer">
+        <div id="toolbarViewer">
+          <div id="toolbarViewerLeft">
+            <button id="sidebarToggle" class="toolbarButton" title="Toggle Sidebar" tabindex="11" data-l10n-id="toggle_sidebar">
+              <span data-l10n-id="toggle_sidebar_label">Toggle Sidebar</span>
+            </button>
+            <div class="toolbarButtonSpacer"></div>
+            <button id="viewFind" class="toolbarButton group hiddenSmallView" title="Find in Document" tabindex="12" data-l10n-id="findbar">
+              <span data-l10n-id="findbar_label">Find</span>
+            </button>
+            <div class="splitToolbarButton">
+              <button class="toolbarButton pageUp" title="Previous Page" id="previous" tabindex="13" data-l10n-id="previous">
+                <span data-l10n-id="previous_label">Previous</span>
+              </button>
+              <div class="splitToolbarButtonSeparator"></div>
+              <button class="toolbarButton pageDown" title="Next Page" id="next" tabindex="14" data-l10n-id="next">
+                <span data-l10n-id="next_label">Next</span>
+              </button>
+            </div>
+            <input type="number" id="pageNumber" class="toolbarField pageNumber" title="Page" value="1" size="4" min="1" tabindex="15" data-l10n-id="page">
+            <span id="numPages" class="toolbarLabel"></span>
+          </div>
+          <div id="toolbarViewerRight">
+            <button id="presentationMode" class="toolbarButton presentationMode hiddenLargeView" title="Switch to Presentation Mode" tabindex="31" data-l10n-id="presentation_mode">
+              <span data-l10n-id="presentation_mode_label">Presentation Mode</span>
+            </button>
+
+            <button style="display: none" id="openFile" class="toolbarButton openFile hiddenLargeView" title="Open File" tabindex="32" data-l10n-id="open_file">
+              <span data-l10n-id="open_file_label">Open</span>
+            </button>
+            <button style="display: none" id="print" class="toolbarButton print hiddenMediumView" title="Print" tabindex="33" data-l10n-id="print">
+              <span data-l10n-id="print_label">Print</span>
+            </button>
+
+
+            <button id="firstPage" style="min-width: inherit;margin-top: 4px;" class="secondaryToolbarButton firstPage" title="Go to First Page" tabindex="56" data-l10n-id="first_page">
+              <!--<span data-l10n-id="first_page_label">Go to First Page</span>-->
+            </button>
+            <div class="verticalToolbarSeparator hiddenSmallView"></div>
+            <button id="lastPage" style="min-width: inherit;margin-top: 4px;" class="secondaryToolbarButton lastPage" title="Go to Last Page" tabindex="57" data-l10n-id="last_page">
+              <!--<span data-l10n-id="last_page_label">Go to Last Page</span>-->
+            </button>
+            <div class="verticalToolbarSeparator hiddenSmallView"></div>
+            <button  style="min-width: inherit;margin-top: 4px;" class="secondaryToolbarButton rotateCw" title="Rotate Clockwise" tabindex="58" data-l10n-id="page_rotate_cw">
+              <!--<span data-l10n-id="page_rotate_cw_label">Rotate Clockwise</span>-->
+            </button>
+            <div class="verticalToolbarSeparator hiddenSmallView"></div>
+            <button id="pageRotateCcw" style="min-width: inherit;margin-top: 4px;" class="secondaryToolbarButton rotateCcw" title="Rotate Counterclockwise" tabindex="59" data-l10n-id="page_rotate_ccw">
+              <!--<span data-l10n-id="page_rotate_ccw_label">Rotate Counterclockwise</span>-->
+            </button>
+            <div class="verticalToolbarSeparator hiddenSmallView"></div>
+            <button id="toggleHandTool" style="min-width: inherit;margin-top: 4px;" class="secondaryToolbarButton handTool" title="Enable hand tool" tabindex="60" data-l10n-id="hand_tool_enable">
+              <!--<span data-l10n-id="hand_tool_enable_label">Enable hand tool</span>-->
+            </button>
+            <div class="verticalToolbarSeparator hiddenSmallView"></div>
+            <button id="documentProperties" style="min-width: inherit;margin-top: 4px;" class="secondaryToolbarButton documentProperties" title="Document Properties…" tabindex="61" data-l10n-id="document_properties">
+              <!--<span data-l10n-id="document_properties_label">Document Properties…</span>-->
+            </button>
+
+
+            <button style="display: none" id="download" class="toolbarButton download hiddenMediumView" title="Download" tabindex="34" data-l10n-id="download">
+              <span data-l10n-id="download_label">Download</span>
+            </button>
+            <a style="display: none" href="#" id="viewBookmark" class="toolbarButton bookmark hiddenSmallView" title="Current view (copy or open in new window)" tabindex="35" data-l10n-id="bookmark">
+              <span data-l10n-id="bookmark_label">Current View</span>
+            </a>
+
+            <!--<div class="verticalToolbarSeparator hiddenSmallView"></div>-->
+
+            <button style="display: none" id="secondaryToolbarToggle" class="toolbarButton" title="Tools" tabindex="36" data-l10n-id="tools">
+              <span data-l10n-id="tools_label">Tools</span>
+            </button>
+          </div>
+          <div id="toolbarViewerMiddle">
+            <div class="splitToolbarButton">
+              <button class="toolbarButton zoomOut" title="Zoom Out" tabindex="21" data-l10n-id="zoom_out">
+                <span data-l10n-id="zoom_out_label">Zoom Out</span>
+              </button>
+              <div class="splitToolbarButtonSeparator"></div>
+              <button  class="toolbarButton zoomIn" title="Zoom In" tabindex="22" data-l10n-id="zoom_in">
+                <span data-l10n-id="zoom_in_label">Zoom In</span>
+              </button>
+            </div>
+                <span id="" class="dropdownToolbarButton">
+                  <!--<select id="scaleSelect" title="Zoom" tabindex="23" data-l10n-id="zoom">
+                    <option id="pageAutoOption" title="" value="auto" selected="selected" data-l10n-id="page_scale_auto">Automatic Zoom</option>
+                    <option id="pageActualOption" title="" value="page-actual" data-l10n-id="page_scale_actual">Actual Size</option>
+                    <option id="pageFitOption" title="" value="page-fit" data-l10n-id="page_scale_fit">Fit Page</option>
+                    <option id="pageWidthOption" title="" value="page-width" data-l10n-id="page_scale_width">Full Width</option>
+                    <option id="customScaleOption" title="" value="custom" disabled="disabled" hidden="true"></option>
+                    <option title="" value="0.5" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 50 }'>50%</option>
+                    <option title="" value="0.75" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 75 }'>75%</option>
+                    <option title="" value="1" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 100 }'>100%</option>
+                    <option title="" value="1.25" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 125 }'>125%</option>
+                    <option title="" value="1.5" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 150 }'>150%</option>
+                    <option title="" value="2" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 200 }'>200%</option>
+                    <option title="" value="3" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 300 }'>300%</option>
+                    <option title="" value="4" data-l10n-id="page_scale_percent" data-l10n-args='{ "scale": 400 }'>400%</option>
+                  </select>-->
+                </span>
+          </div>
+        </div>
+        <div id="loadingBar">
+          <div class="progress">
+            <div class="glimmer">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <menu type="context" id="viewerContextMenu">
+      <menuitem id="contextFirstPage" label="First Page"
+                data-l10n-id="first_page"></menuitem>
+      <menuitem id="contextLastPage" label="Last Page"
+                data-l10n-id="last_page"></menuitem>
+      <menuitem id="contextPageRotateCw" label="Rotate Clockwise"
+                data-l10n-id="page_rotate_cw"></menuitem>
+      <menuitem id="contextPageRotateCcw" label="Rotate Counter-Clockwise"
+                data-l10n-id="page_rotate_ccw"></menuitem>
+    </menu>
+
+    <div id="viewerContainer" tabindex="0">
+      <div id="viewer" class="pdfViewer"></div>
+    </div>
+    <div id="helper">
+      <ul>
+        <li style="display: none"></li>
+        <li onclick="fuzhi()">复制</li>
+        <li class="sucaiHide" onclick="zhaiyao()" style="display: none">摘要</li>
+        <li class="sucaiHide" onclick="yidian()" style="display: none">疑点</li>
+        <li class="sucaiHide" onclick="biaozhu()" style="display: none">标注</li>
+        <li class="sucaiHide" onclick="pizhu()" style="display: none">批注</li>
+        <li onclick="sousuo()">搜索</li>
+      </ul>
+    </div>
+    <div id="errorWrapper" hidden='true'>
+      <div id="errorMessageLeft">
+        <span id="errorMessage"></span>
+        <button id="errorShowMore" data-l10n-id="error_more_info">
+          More Information
+        </button>
+        <button id="errorShowLess" data-l10n-id="error_less_info" hidden='true'>
+          Less Information
+        </button>
+      </div>
+      <div id="errorMessageRight">
+        <button id="errorClose" data-l10n-id="error_close">
+          Close
+        </button>
+      </div>
+      <div class="clearBoth"></div>
+      <textarea id="errorMoreInfo" hidden='true' readonly="readonly"></textarea>
+    </div>
+  </div> <!-- mainContainer -->
+
+  <div id="overlayContainer" class="hidden">
+    <div id="passwordOverlay" class="container hidden">
+      <div class="dialog">
+        <div class="row">
+          <p id="passwordText" data-l10n-id="password_label">Enter the password to open this PDF file:</p>
+        </div>
+        <div class="row">
+          <!-- The type="password" attribute is set via script, to prevent warnings in Firefox for all http:// documents. -->
+          <input id="password" class="toolbarField">
+        </div>
+        <div class="buttonRow">
+          <button id="passwordCancel" class="overlayButton"><span data-l10n-id="password_cancel">Cancel</span></button>
+          <button id="passwordSubmit" class="overlayButton"><span data-l10n-id="password_ok">OK</span></button>
+        </div>
+      </div>
+    </div>
+    <div id="documentPropertiesOverlay" class="container hidden">
+      <div class="dialog">
+        <div class="row">
+          <span data-l10n-id="document_properties_file_name">File name:</span> <p id="fileNameField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_file_size">File size:</span> <p id="fileSizeField">-</p>
+        </div>
+        <div class="separator"></div>
+        <div class="row">
+          <span data-l10n-id="document_properties_title">Title:</span> <p id="titleField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_author">Author:</span> <p id="authorField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_subject">Subject:</span> <p id="subjectField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_keywords">Keywords:</span> <p id="keywordsField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_creation_date">Creation Date:</span> <p id="creationDateField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_modification_date">Modification Date:</span> <p id="modificationDateField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_creator">Creator:</span> <p id="creatorField">-</p>
+        </div>
+        <div class="separator"></div>
+        <div class="row">
+          <span data-l10n-id="document_properties_producer">PDF Producer:</span> <p id="producerField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_version">PDF Version:</span> <p id="versionField">-</p>
+        </div>
+        <div class="row">
+          <span data-l10n-id="document_properties_page_count">Page Count:</span> <p id="pageCountField">-</p>
+        </div>
+        <div class="buttonRow">
+          <button id="documentPropertiesClose" class="overlayButton"><span data-l10n-id="document_properties_close">Close</span></button>
+        </div>
+      </div>
+    </div>
+    <div id="printServiceOverlay" class="container hidden">
+      <div class="dialog">
+        <div class="row">
+          <span data-l10n-id="print_progress_message">Preparing document for printing…</span>
+        </div>
+        <div class="row">
+          <progress value="0" max="100"></progress>
+          <span data-l10n-id="print_progress_percent" data-l10n-args='{ "progress": 0 }' class="relative-progress">0%</span>
+        </div>
+        <div class="buttonRow">
+          <button id="printCancel" class="overlayButton"><span data-l10n-id="print_progress_close">Cancel</span></button>
+        </div>
+      </div>
+    </div>
+  </div>  <!-- overlayContainer -->
+
+</div> <!-- outerContainer -->
+<div id="printContainer"></div>
+<input type="file" id="myfile" style="position:absolute;top:100px;" />
+<script src="./jquery.min.js"></script>
+<script src="./jstree/jstree.min.js"></script>
+<script>
+var data = '[{"ID":"26D4DCD51AAF4107A3FE5D137700B3E2","PARENTID":"-1","NODENAME":"诉讼卷"},{"ID":"9851F759D4034D4B800569720743DA14","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"现场勘查录入，现场勘查图，现场照片"},{"ID":"405A8CFA7C7C4C938A5497EF535C5340","PARENTID":"-1","NODENAME":"证据材料卷"},{"ID":"1490F389B90842EFB2C22FFFF071C892","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"盘问笔录"},{"ID":"ECDEF43040144168B26454512C0982FB","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"提讯证"},{"ID":"E39AA7B3B9DA4D1F838EF26F7229DA33","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"被害人陈述材料、报案材料"},{"ID":"2357FEE3EFB84472AC417358A969D010","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"讯问笔录"},{"ID":"0DF934D0AAA34ECFBE162BC64FDB37C4","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"询问证人笔录"},{"ID":"806FC960E0804CED8FF24A73FCE6F449","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"询问被害人笔录"},{"ID":"1BEC60F3CA5F4929AB7EF4709803C5B5","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"搜查证、搜查笔录"},{"ID":"EF568F2440354243BA67E5F87A40C74E","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"辨认笔录"},{"ID":"9A9C5D0249334D828E38AAE0D9F1375B","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"称量提取检材笔录"},{"ID":"F2E5A56478B24E25B8C5C99442872B5D","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"指认笔录"},{"ID":"4D0AA107076E45208F74155EBC730DB1","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"视听资料"},{"ID":"BB8CE8DB40E3430FADA17FFD7E854695","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"鉴定书、委托书、鉴定意见通知书"},{"ID":"88E89EA7E4DC42EFB74500B185E7F40E","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"法医和DNA检验鉴定"},{"ID":"866C21CC5A8446369C85D67E1870A918","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"司法精神病鉴定"},{"ID":"AE99B0FC51A847E1B5FC7EC2424EBE4E","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"痕迹检验鉴定"},{"ID":"7843A56AC8BC4730A51B3EC4D5A3A8DD","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"理化检验鉴定"},{"ID":"0656674F3D1E4782BBAAB307DE35A0EC","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"伤情鉴定"},{"ID":"74140AB79CFA4CB88DD23F1189E0ACF3","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"估价鉴定"},{"ID":"669F05A741334C09BB455B32EF15ED3A","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"发还清单"},{"ID":"D879C501950A4C76BAF0795F2B9055AF","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"随案移送清单"},{"ID":"C5253F3562534A7D80E03ED465241EAF","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"销毁清单"},{"ID":"7D1883D0C40547CE8103BABC792C843B","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"相关照片"},{"ID":"033CBBDD08954D20BDF7EECA80C406DF","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"民事赔偿协议"},{"ID":"4D051641F7C94C14A88A777D5AB22B18","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"刑事谅解书"},{"ID":"3EF28E3FECA2473BB6B5EFD47232F60B","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"物证照片及制作、保存说明"},{"ID":"722A2D1BA27447A7A313003EE622C2F3","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"社会调查报告"},{"ID":"69DFC1AB1B6349CDABB92173EBDE5BF1","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"询问通知书"},{"ID":"1A4705BB15F54408A01C531048E6999A","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"未成年证人法定代理人到场通知书"},{"ID":"A06A04693ED94CBB92C8E924966CB40D","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"证人诉讼权利义务告知书"},{"ID":"9E56CBEB3AA94253A023DAE0D86B9F6A","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"扣押决定书、扣押清单"},{"ID":"74D481EFEEAA45CEA60996917686B0C2","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"调取证据清单、通知书"},{"ID":"967DF7EB105D44B891EE351D0E6BECF8","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"户籍信息资料"},{"ID":"A5BD528CA2624AFFA5F7B2FBF3E7F796","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"归案（抓获）情况的说明"},{"ID":"97AD4C88B9E4428B8F59E56C2CD95E85","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"提讯提解证"},{"ID":"66EE7BAA00424129BCF480A465ABA7BB","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"传唤证、拘传证"},{"ID":"E64137CFC4794950A0986B43E78B15D1","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"未成年人法定代理人到场通知书"},{"ID":"64384F712B2747D5A1BDB6045B9CBB4A","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"犯罪嫌疑人诉讼权利义务告知书"},{"ID":"84320547E4644AE09ECA9C69BE862D0D","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"勘查证"},{"ID":"FFF3B6D677274C2EBA9D694729B8ABAB","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"勘验检查笔录"},{"ID":"31E826A958FB40089B23AD7847FDFC50","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"委托勘检书"},{"ID":"C0947BA7EA6F498BB1F21D6E28598C8A","PARENTID":"405A8CFA7C7C4C938A5497EF535C5340","NODENAME":"委托鉴定书"},{"ID":"9BFADA6F2A2C4182A4D805EB8C30ED4F","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"封面"},{"ID":"CDCD83BC23B9447181AAD38286B8BB0A","PARENTID":"9851F759D4034D4B800569720743DA14","NODENAME":"封面"},{"ID":"D2AE506BB1CA4FD7A5A38F5463B823D3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"目录"},{"ID":"5E403915D71A4C6FA444608DAE8042B7","PARENTID":"9851F759D4034D4B800569720743DA14","NODENAME":"第 1 页"},{"ID":"BD5956C8B08B4443B83037AD273166DC","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 1 页"},{"ID":"271C36A91D134AF99C29581100900CD3","PARENTID":"9851F759D4034D4B800569720743DA14","NODENAME":"第 2 页"},{"ID":"CD7167D6946B40A19A4E19E90D552CAB","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 2 页"},{"ID":"4276FA79A1B543419D33327367346365","PARENTID":"9851F759D4034D4B800569720743DA14","NODENAME":"第 3 页"},{"ID":"2BADC394BE744D36B516EC724D3EF5D5","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 3 页"},{"ID":"F9980184D1374068BF9529543A4C535F","PARENTID":"9851F759D4034D4B800569720743DA14","NODENAME":"第 4 页"},{"ID":"217F9612048D49ECA0C6B508EB5989D2","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 4 页"},{"ID":"1A1FD19EBC3F4485B57A4440D8A6B34B","PARENTID":"9851F759D4034D4B800569720743DA14","NODENAME":"第 5 页"},{"ID":"0C995CB99BEB4CF088F84D83449B515D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 5 页"},{"ID":"D0C635C2CBE0444B9E9B7DAE63335393","PARENTID":"9851F759D4034D4B800569720743DA14","NODENAME":"第 6 页"},{"ID":"A5916927B4914B478C1A1251C476EC42","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 6 页"},{"ID":"CD1A596FF0494125AB6ABB84F0B365C3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 7 页"},{"ID":"26A592C9C08946FF94548836F4E63877","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 8 页"},{"ID":"22F7AF14EC84418A916A0A281DEFE7BA","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 9 页"},{"ID":"3B11A490B3AE4D17985F04A6D332E396","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 10 页"},{"ID":"77FB80532486459195F1945E6FC98288","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 11 页"},{"ID":"271BA67F45084274A38E2A554D592267","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 12 页"},{"ID":"3E567F855A2E42C9830D263A9E261E4A","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 13 页"},{"ID":"103BBEA1ED2744FBAF66344F9D2B1543","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 14 页"},{"ID":"F4C86DC369DE44808219403793EE2CC8","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 15 页"},{"ID":"A8DD87E7B5DB47F59E41A2C760157C02","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 16 页"},{"ID":"A3791649938E4531A4D28F1214B22696","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 17 页"},{"ID":"5FFAD33F2A4A4281A177E66C24EAA5A1","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 18 页"},{"ID":"EEF57082EA2F42C59D2C8EE6F43B454D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 19 页"},{"ID":"7E03C39DD7674894B440FD6F17F5DCAF","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 20 页"},{"ID":"AB5B1469D0324C438F3EB767AE3095F3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 21 页"},{"ID":"C0A8B08CEA9540B4A1767BBF143C731A","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 22 页"},{"ID":"6336294ED4BE4D3C95E8E4129A12790D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 23 页"},{"ID":"982ACDF001B64DD19CA485ABC847F742","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 24 页"},{"ID":"B584FA508751412D9FB357C73519286A","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 25 页"},{"ID":"85A7946529BA4EBB9C8C123A200B5E48","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 26 页"},{"ID":"320941A588E44D1AB0A40451529D549B","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 27 页"},{"ID":"A858E81262B0413ABC239621A13AE90E","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 28 页"},{"ID":"0F364A832B4541C28C4B5649E7C37B5C","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 29 页"},{"ID":"D3A73438B1B74641976FAEAD3BABCA36","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 30 页"},{"ID":"41A8BF2944784374872AEE9ECF92910E","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 31 页"},{"ID":"E16D3060F3FF453BBF9F6AF86CF5591C","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 32 页"},{"ID":"C4694DEFED6549B0BD521BE767FFEDDB","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 33 页"},{"ID":"BBB06EB059E845599AD05088DC4DEA7E","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 34 页"},{"ID":"E8AAA570675F4496899F0891DEBBC095","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 35 页"},{"ID":"EB7F34AE03CA4C79B6A8F4AA777FC338","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 36 页"},{"ID":"7F20E5F3B5E647E89153161D7131E16D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 37 页"},{"ID":"7F72034948FE4C5B85A647B653401690","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 38 页"},{"ID":"8283F51CC7B347BEA9DFD84D6E149FC1","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 39 页"},{"ID":"38A7E2A177B04228859F1C2FD40D21C8","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 40 页"},{"ID":"E5187D5813F44C0E9362AD5B799212D9","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 41 页"},{"ID":"DFD6AE920B874F47B4FFD505486F269C","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 42 页"},{"ID":"4C0732892F2B41C6B71E6583F76F5A72","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 43 页"},{"ID":"45FD1C41BC5248F09A8DCA8D962DB390","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 44 页"},{"ID":"BF47B5E45FC34F939092DFCFE8DD8C69","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 45 页"},{"ID":"9D248187CF6343B5870BEB8A4A23C17A","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 46 页"},{"ID":"447EFADED3604C69A045A87A83745DB7","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 47 页"},{"ID":"AF500C007EA14EE593A4CBA642A3198B","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 48 页"},{"ID":"D8A86537818C4C2781C07F8D1E6014B4","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 49 页"},{"ID":"82E8A6F6E8EF4936999773FD671347D9","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 50 页"},{"ID":"7A6BD48053FA4E72BF222B772636BB33","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 51 页"},{"ID":"A8207573CE954A78BCE3174745863256","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 52 页"},{"ID":"881C48C79DFD4D1D9DA1ACF36803F5DF","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 53 页"},{"ID":"67D8F5EAA1994406AD64FBCC7F2F9D8F","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 54 页"},{"ID":"88B4A429CD5949BABEA3B268A4C6EE46","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 55 页"},{"ID":"42974711854E48B9A045770AE0D77028","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 56 页"},{"ID":"BAD7F14928E446E0A859D85F2DFEF311","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 57 页"},{"ID":"B829886BFCB14F258E89B37A5A7B98D3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 58 页"},{"ID":"69C871818EC4468EAAFE35DC0048B810","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 59 页"},{"ID":"42B728E875104068B77309CE81A2A1F3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 60 页"},{"ID":"7136B62AB6B5497887483AE336C8EC42","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 61 页"},{"ID":"C5E6C99B64444F39B450F9949320A4E9","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 62 页"},{"ID":"D5B159C2FBDD46E781510C599E22F224","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 63 页"},{"ID":"AC317E23102A4D13AB0452EBF9735DDC","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 64 页"},{"ID":"BBBBA28510B6485E851193A9F62D0444","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 65 页"},{"ID":"3023EE304BC2490896C38CA654337D06","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 66 页"},{"ID":"26D76E71F5A44CBB8D21216847ECE77D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 67 页"},{"ID":"3D06856BBD484F33860D98F6AE2E6064","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 68 页"},{"ID":"510BA81098B940C19064CE1BB584346E","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 69 页"},{"ID":"4624F26BF5D2473EAF7129F310C82A17","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 70 页"},{"ID":"999FD01BCA33497493F127C0D45C67B2","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 71 页"},{"ID":"B000381C975D4080BA8F86464FF06760","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 72 页"},{"ID":"C85DCAA5809E423F9222BDF63CDE4651","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 73 页"},{"ID":"47555CDE44354CAC9FADEF30ED618CEC","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 74 页"},{"ID":"A2A15E4944254366B59AF00667C2B5E0","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 75 页"},{"ID":"71F7E19337BB488AA15B25324B940ED6","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 76 页"},{"ID":"FA654A42770A43C9BA1A2AEA138489BF","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 77 页"},{"ID":"205A789F01C046A7A5F24C88B9D04FAF","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 78 页"},{"ID":"63E07775D92B499399D502C9B08F1D76","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 79 页"},{"ID":"0FAFDC90CEAE42D3B42095C4757956B5","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 80 页"},{"ID":"9E95696DE0374CFFBA8F494E0C81884D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 81 页"},{"ID":"99C0E2FCA86A49E886B2A62E6AB880B3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 82 页"},{"ID":"B900D12C301D41958B600EBC9828CDB8","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 83 页"},{"ID":"AFED49A1C0CC4A05B78EA24B38B523BA","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 84 页"},{"ID":"4A185F0D8BB648FCAA0828D99B0FB1C6","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 85 页"},{"ID":"940CE956C09F400781FFF666E8A01C52","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 86 页"},{"ID":"4922AA3C853041DCADE03395CC0041DA","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 87 页"},{"ID":"D8A6CA1B6CAD4731A2AD2F129A4EC314","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 88 页"},{"ID":"6E8E7EA0337948B7998B3D7B00FDA19D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 89 页"},{"ID":"012D595CC2FF42EA9E2043738789A06A","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 90 页"},{"ID":"D179979586E646E0A44F995C092339C3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 91 页"},{"ID":"4ABC0F1AB48A4ABCB463EB21FB13A2CE","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 92 页"},{"ID":"52500BFE2189498FACAF9DE16658602A","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 93 页"},{"ID":"25420EEFEE3B465B878ED85554E0C8C9","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 94 页"},{"ID":"4507B68BAEC548D3A4AF614E9B368CC4","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 95 页"},{"ID":"C811FDA494EC4A968B0C57D2E9962C42","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 96 页"},{"ID":"7E12EDEF538840738F270D96772B8C48","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 97 页"},{"ID":"29F3C70F2D7B49BC9A661879BE71C652","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 98 页"},{"ID":"631E547265E74E08995A8B0BFC7558A2","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 99 页"},{"ID":"19AEB32744764C91A24234D2086CAD0D","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 100 页"},{"ID":"F2E10B39B3AE489B8E94E81E7494E4F5","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 101 页"},{"ID":"2EF6902F4943470A942368A0BC9E050E","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 102 页"},{"ID":"683C8C512B1242948FE3F34033A006C0","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 103 页"},{"ID":"13004A176A4B406B8EA77C28FF0E1F7F","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 104 页"},{"ID":"D00D2477B653459F840C793C2BC3F396","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 105 页"},{"ID":"51ED9CF1191946528A4FA0263EF879BF","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 106 页"},{"ID":"4B707F03946E4739B0CB8B7E5FDDBBD6","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 107 页"},{"ID":"334E57717BD043AF98CECAC2F39A1C92","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 108 页"},{"ID":"4B67B6E2A15847409745A53E0D009173","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 109 页"},{"ID":"9600459ACF804C5B8CFB011F1309CF68","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 110 页"},{"ID":"71FCE362996F41FFAE30F5ACE4A2D9D3","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 111 页"},{"ID":"BB986577BABE411C882A5BC1423AEFC6","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 112 页"},{"ID":"402490E40F594A30A4AA97A549C33E18","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 113 页"},{"ID":"3931A9B4F4BB4688821E0D93B7414EDA","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 114 页"},{"ID":"14E3DABACA584FAB91E42C8FC65A7809","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 115 页"},{"ID":"4B60CA7BF95A4637858FFEFA347C26C8","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 116 页"},{"ID":"6F89A4C3360C45528FC655ED121C2C64","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 117 页"},{"ID":"AFADBE9E663546BA81B667B53282B2B7","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 118 页"},{"ID":"114E33360461448D96E3D27EB372502A","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 119 页"},{"ID":"136895586FAF466396BB7B1200F761B4","PARENTID":"26D4DCD51AAF4107A3FE5D137700B3E2","NODENAME":"第 120 页"}]';
+
+
+  setTimeout(function(){
+    window.fileuploader(null,null,data);
+  }, 2000)
+  
+  $(function(){
+
+  
+  $('#pdfMoving').click(function(e){
+    var page = window.PDFViewerApplication.page;
+    window.csObj.getCompareData(page);
+  })
+})
+</script>
+</body>
+</html>
+
